@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { ImageBlock } from 'notion-types'
-import { getTextContent } from 'notion-utils'
+import { getPageProperty, getTextContent } from 'notion-utils'
 
 import { LazyImage } from '../components/lazy-image'
 import { NotionContextProvider, dummyLink, useNotionContext } from '../context'
@@ -28,6 +28,14 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
     isLinkCollectionToUrlProperty
   } = ctx
   let coverContent = null
+
+  const target =
+    (getPageProperty('Target', block, recordMap) as string | null) ||
+    (getPageProperty('target', block, recordMap) as string | null)
+
+  const externalUrl =
+    (getPageProperty('URL', block, recordMap) as string | null) ||
+    (getPageProperty('url', block, recordMap) as string | null)
 
   const { page_cover_position = 0.5 } = block.format || {}
   const coverPosition = (1 - page_cover_position) * 100
@@ -211,14 +219,15 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
         PageLink: dummyLink
       }}
     >
-      {isLinkCollectionToUrlProperty && url ? (
+      {(isLinkCollectionToUrlProperty && url) || externalUrl ? (
         <components.Link
           className={cs(
             'notion-collection-card',
             `notion-collection-card-size-${coverSize}`,
             className
           )}
-          href={url}
+          href={externalUrl || url}
+          target={target || '_blank'}
           {...rest}
         >
           {innerCard}
